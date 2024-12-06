@@ -64,27 +64,3 @@ class ChatConsumer(AsyncWebsocketConsumer):
             'message': message
         }))
 
-
-
-
-"""
-class ChatConsumer(WebsocketConsumer):
-    def connect(self):
-
-        # Websocketを受け取り、経路を作る
-        self.accept()
-
-    def disconnect(self, close_code):
-        pass
-
-    def receive(self, text_data):
-
-        # チャットの投稿を受け取り、それを返却する。
-
-        text_data_json  = json.loads(text_data)
-        message         = text_data_json['message']
-
-        self.send(text_data=json.dumps({ 'message': "Anonymous > " + message }))
-        #self.send(text_data=json.dumps({ 'message': "検閲済み" }))
-
-"""

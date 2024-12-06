@@ -1,0 +1,52 @@
+<!-- chat/templates/chat/room.html -->
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8"/>
+    <title>Chat Room</title>
+</head>
+<body>
+    <textarea id="chat-log" cols="100" rows="20"></textarea><br>
+    <input id="chat-message-input" type="text" size="100"><br>
+    <input id="chat-message-submit" type="button" value="Send">
+    {{ room_name|json_script:"room-name" }}
+    <script>
+        const roomName      = JSON.parse(document.getElementById('room-name').textContent);
+
+        // TIPS: routing.py で定義したWebSocketエンドポイントを引数に入れ、WebSocketのオブジェクトを作る。
+        // TIPS: consumers.py で  self.accept() されると接続確立。
+        const chatSocket    = new WebSocket(`ws://${window.location.host}/ws/chat/${roomName}/`);
+
+
+        // TIPS: consumers.py で self.send() されたとき(メッセージを受け取ったときに発動。)
+        chatSocket.onmessage = (e) => {
+            const data = JSON.parse(e.data);
+            document.querySelector('#chat-log').value += (data.message + '\n');
+        };
+
+        // TIPS: consumers.pyから .group_discard() で切断されたとき
+        chatSocket.onclose = (e) => {
+            console.error('Chat socket closed unexpectedly');
+        };
+
+        document.querySelector('#chat-message-input').focus();
+        document.querySelector('#chat-message-input').onkeyup = (e) => {
+            if (e.keyCode === 13) {  // enter, return
+                document.querySelector('#chat-message-submit').click();
+            }
+        };
+
+        // TIPS: メッセージを送信する。WebSocket のオブジェクトから .send() 引数はJSON文字列
+        document.querySelector('#chat-message-submit').onclick = (e) => {
+            const messageInputDom   = document.querySelector('#chat-message-input');
+            const message           = messageInputDom.value;
+
+            chatSocket.send(JSON.stringify({ 'message': message }));
+            messageInputDom.value = '';
+        };
+
+
+    </script>
+</body>
+</html>
+
